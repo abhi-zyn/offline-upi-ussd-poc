@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Offline UPI PoC</string>
+    <string name="accessibility_label">Offline UPI USSD Automator</string>
+    <string name="accessibility_description">Navigates the *99# USSD dialogs to complete an offline UPI payment. Personal-use proof of concept.</string>
+
+    <string name="harness_title">Offline UPI · USSD PoC</string>
+    <string name="harness_subtitle">Canara Bank *99# automation engine. Test only — sends a real payment.</string>
+
+    <string name="grant_permissions">1. Grant permissions</string>
+    <string name="enable_accessibility">2. Enable Accessibility service</string>
+    <string name="label_perms">Permissions</string>
+    <string name="label_service">Accessibility service</string>
+
+    <string name="hint_vpa">Recipient UPI ID (e.g. name@oksbi)</string>
+    <string name="hint_amount">Amount (≤ 5000)</string>
+    <string name="pay">Pay via *99#</string>
+    <string name="ref_no">Ref no</string>
+    <string name="starting">Starting USSD session…</string>
+
+    <string name="perms_granted">Permissions granted</string>
+    <string name="perms_denied">Some permissions were denied</string>
+    <string name="enable_service_hint">Find \"Offline UPI USSD Automator\" and turn it on.</string>
+    <string name="grant_perms_first">Grant permissions first</string>
+    <string name="enable_service_first">Enable the Accessibility service first</string>
+    <string name="payment_in_progress">A payment is already in progress</string>
+    <string name="invalid_vpa">Enter a valid UPI ID</string>
+    <string name="invalid_amount">Enter a valid amount</string>
+    <string name="over_limit">*99# limit is ₹5000 per txn</string>
+
+    <string name="pin_prompt_title">Enter UPI PIN</string>
+    <string name="pin_prompt_subtitle">Authorize ₹%1$s to %2$s</string>
+    <string name="pin_prompt_generic">Authorize this payment</string>
+    <string name="pin_hint">UPI PIN</string>
+    <string name="pin_confirm">Confirm</string>
+    <string name="pin_required">PIN required</string>
+    <string name="cancel">Cancel</string>
+    <string name="cancelled_by_user">Cancelled by user</string>
+</resources>
