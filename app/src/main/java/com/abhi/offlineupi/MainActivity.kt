@@ -17,9 +17,15 @@ import com.abhi.offlineupi.databinding.ActivityMainBinding
 /**
  * Step 7 — minimal test harness.
  *
- * Bare-bones single screen: UPI ID + amount + Pay button + result label, plus
- * helpers to enable the required permissions and the Accessibility service. This is
- * NOT the GPay-like UI — that is Phase 2 once the engine is proven.
+ * Single screen: UPI ID + amount, two pay buttons, a result label, plus helpers to
+ * enable permissions and the Accessibility service.
+ *
+ *  - "Pay via *99# (Accessibility)": the real multi-step flow. The UPI PIN is now
+ *    collected UP-FRONT (before the USSD session starts); the AccessibilityService
+ *    injects it when the bank's PIN screen appears.
+ *  - "Test single-call (no Accessibility)": fires ONE USSD request and shows the raw
+ *    response — a diagnostic to check USSD works and to experiment with concatenated
+ *    strings. It does not use the Accessibility service.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +37,18 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         val granted = result.values.all { it }
         toast(if (granted) getString(R.string.perms_granted) else getString(R.string.perms_denied))
+    }
+
+    // Launches the secure PIN prompt BEFORE dialling. Only when the user confirms a
+    // PIN (RESULT_OK) do we start the *99# session.
+    private val pinLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            binding.txtResult.text = getString(R.string.starting)
+            controller.dial()
+        }
+        // On cancel, PinPromptActivity already reported the cancellation result.
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +65,7 @@ class MainActivity : AppCompatActivity() {
             toast(getString(R.string.enable_service_hint))
         }
         binding.btnPay.setOnClickListener { attemptPayment() }
+        binding.btnPayDirect.setOnClickListener { attemptDirectPayment() }
     }
 
     override fun onResume() {
@@ -59,6 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Real flow: validate -> begin session -> collect PIN -> (on OK) dial *99#. */
     private fun attemptPayment() {
         if (!hasAllPermissions()) { toast(getString(R.string.grant_perms_first)); return }
         if (!isAccessibilityEnabled()) { toast(getString(R.string.enable_service_first)); return }
@@ -72,10 +92,44 @@ class MainActivity : AppCompatActivity() {
             amount == null || amount <= 0 -> binding.inputAmount.error = getString(R.string.invalid_amount)
             amount > 5000 -> binding.inputAmount.error = getString(R.string.over_limit)
             else -> {
-                binding.txtResult.text = getString(R.string.starting)
-                controller.startPayment(PaymentRequest(vpa = vpa, amount = amountStr))
+                // Begin the session first (so the PIN prompt can show amount + payee),
+                // then collect the PIN up-front. dial() runs only after RESULT_OK.
+                PaymentSession.begin(PaymentRequest(vpa = vpa, amount = amountStr))
+                pinLauncher.launch(Intent(this, PinPromptActivity::class.java))
             }
         }
+    }
+
+    /** Diagnostic flow: fire one USSD string, no Accessibility service. */
+    private fun attemptDirectPayment() {
+        if (!hasAllPermissions()) { toast(getString(R.string.grant_perms_first)); return }
+        if (PaymentSession.isActive()) { toast(getString(R.string.payment_in_progress)); return }
+
+        val vpa = binding.inputVpa.text?.toString()?.trim().orEmpty()
+        val amountStr = binding.inputAmount.text?.toString()?.trim().orEmpty()
+        val amount = amountStr.toDoubleOrNull()
+        if (amount == null || amount <= 0) {
+            binding.inputAmount.error = getString(R.string.invalid_amount); return
+        }
+
+        // USSD strings may contain only digits, * and #. A real VPA (with @ and .)
+        // cannot be encoded, so for a UPI ID we can only fire plain *99# to show the
+        // first menu. If the recipient field is a plain mobile number, we can build a
+        // concatenated send-money string to experiment with.
+        val digits = vpa.filter { it.isDigit() }
+        val ussd: String = if (vpa.isNotEmpty() && !vpa.contains("@") && digits.length in 10..12) {
+            "*99*1*1*$digits*$amountStr#"
+        } else {
+            toast(getString(R.string.direct_vpa_note))
+            "*99#"
+        }
+
+        binding.txtResult.text = getString(R.string.direct_sending, ussd)
+        controller.sendSingleShot(
+            ussd = ussd,
+            onResponse = { resp -> runOnUiThread { binding.txtResult.text = getString(R.string.direct_response, resp) } },
+            onFailed = { code -> runOnUiThread { binding.txtResult.text = getString(R.string.direct_failed, code) } },
+        )
     }
 
     private fun showResult(result: PaymentResult) {
