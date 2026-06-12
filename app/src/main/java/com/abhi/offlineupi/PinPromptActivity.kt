@@ -15,6 +15,11 @@ import androidx.appcompat.app.AppCompatActivity
  * The PIN is NEVER stored: it lives only in this Activity's masked field, is handed
  * to PaymentSession as a CharArray, and is wiped right after. FLAG_SECURE blocks
  * screenshots / screen recording while the PIN is on screen.
+ *
+ * This Activity now reports a RESULT_OK / RESULT_CANCELED back to the caller, so the
+ * UI can collect the PIN up-front and only THEN kick off the *99# session. (The
+ * AccessibilityService can also launch it mid-flow as a fallback; in that case the
+ * result code is simply ignored.)
  */
 class PinPromptActivity : AppCompatActivity() {
 
@@ -60,6 +65,7 @@ class PinPromptActivity : AppCompatActivity() {
                 PaymentSession.providePin(pin)
                 // Wipe the field's backing buffer.
                 pinField.text.clear()
+                setResult(RESULT_OK)
                 finish()
             }
         }
@@ -68,6 +74,7 @@ class PinPromptActivity : AppCompatActivity() {
             text = getString(R.string.cancel)
             setOnClickListener {
                 PaymentSession.finish(PaymentResult(false, getString(R.string.cancelled_by_user)))
+                setResult(RESULT_CANCELED)
                 finish()
             }
         }
