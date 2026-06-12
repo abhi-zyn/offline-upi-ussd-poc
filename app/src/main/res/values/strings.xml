@@ -14,7 +14,7 @@
 
     <string name="hint_vpa">Recipient UPI ID (e.g. name@oksbi)</string>
     <string name="hint_amount">Amount (≤ 5000)</string>
-    <string name="pay">Pay via *99#</string>
+    <string name="pay">Pay via *99# (Accessibility)</string>
     <string name="ref_no">Ref no</string>
     <string name="starting">Starting USSD session…</string>
 
@@ -36,4 +36,12 @@
     <string name="pin_required">PIN required</string>
     <string name="cancel">Cancel</string>
     <string name="cancelled_by_user">Cancelled by user</string>
+
+    <!-- Single-call (no Accessibility) test path -->
+    <string name="pay_direct">🧪 Test single-call (no Accessibility)</string>
+    <string name="direct_hint">Fires one USSD request and shows the raw response. Diagnostic only — can\'t finish a multi-step payment.</string>
+    <string name="direct_vpa_note">USSD can\'t contain a UPI ID (@). Sending *99# to show the first menu instead.</string>
+    <string name="direct_sending">Sending %1$s…</string>
+    <string name="direct_response">USSD response:\n%1$s</string>
+    <string name="direct_failed">USSD failed (code %1$d). Your SIM may block USSD (e.g. Jio / VoLTE-only).</string>
 </resources>
