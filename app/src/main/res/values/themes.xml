@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.OfflineUpiPoc" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/purple</item>
+    </style>
+
+    <style name="Theme.OfflineUpiPoc.Dialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowCloseOnTouchOutside">false</item>
+    </style>
+</resources>
