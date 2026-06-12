@@ -45,7 +45,9 @@ class UssdAccessibilityService : AccessibilityService() {
             CanaraState.CONFIRMATION -> handleConfirmation(dialogText)
             CanaraState.UNKNOWN -> abort("Unexpected screen — aborting for safety:\n$dialogText")
             else -> {
-                val input = CanaraFlow.inputFor(state, request)
+                // For menus, inputFor reads the live text and picks the real option
+                // number; for text-entry screens it returns the value to type.
+                val input = CanaraFlow.inputFor(state, request, dialogText)
                 if (input != null) respond(source, input)
             }
         }
